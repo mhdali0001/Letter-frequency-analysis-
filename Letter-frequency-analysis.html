@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Odev1</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+    .container {
+        position: relative;
+        font-family: Arial;
+    }
+    img{
+        height: 300px;
+    
+    }
+    .text-block {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        background-color: black;
+        color: white;
+        padding-left: 50px;
+        padding-right: 20px;
+    }
+    </style>
+</head>
+<body>
+
+
+<div class="container">
+  <img src="https://cdn.pixabay.com/photo/2018/09/05/07/33/hacker-3655668_1280.jpg" alt="Nature" style="width:100%;">
+  <div class="text-block">
+    <h1>Welcome</h1>
+    <p>It's first home work in Computer Security and Cryptography lecture</p>
+  </div>
+</div>
+
+
+<div class="container mt-3">
+    <form id="TextplainForm" >
+        <div class="mb-3 mt-3">
+            Plain Text: <br>
+            <textarea class="form-control" rows="5" name="message" style="width: 80%;" ></textarea><br>
+            Key: <input type="number"  class="form-control" placeholder="Normal input" style="width: 40%;" name="" ><br>
+        </div>
+    </form>
+    <button onclick="EncryptionFunction()"  class="btn btn-primary">Try it</button>
+</div>
+
+<div class="container p-5 my-5 bg-dark text-white">
+    <center>
+        <h1>ciphertext:</h1>
+        <p id="ciphertext"></p>
+    </center>
+</div>
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+<center>
+
+    <div class="container p-5 my-5 border">
+        <canvas id="myChart" style="width:100%;max-width:600px"></canvas>
+    </div>
+</center>
+
+<div class="container mt-3">
+    <form id="RefrenceForm" >
+        <div class="mb-3 mt-3">
+            Refrence Text: <br>
+            <textarea class="form-control" rows="5" name="message" style="width: 80%;"></textarea><br>
+        </div>
+    </form>
+    <button onclick="RefrenceFunction()"  class="btn btn-primary">Try it</button>    
+</div>
+
+  <center>
+
+    <div class="container p-5 my-5 border">
+        <canvas id="refrenceChart" style="width:100%;max-width:600px"></canvas>
+    </div>
+</center>
+
+<div class="container p-5 my-5 bg-primary text-white">
+<h6>Plain Text</h6>
+<p id="Normaltext"></p>
+<h6>Solved Text</h6>
+<p id="solovedtext"></p>
+<h6> Result:</h6>
+<p id="similarityRate"></p>
+</div>
+
+<script>
+let Encryption_test = [];
+let Encryption_test_value = [];
+let Refrence_test = [];
+let Refrence_test_value = [];
+let Encrypted_text = [];
+let solved_text = [];
+let text_plain = [];
+let Encrypted_textplain = [];
+
+function letter_frequency_analysis(refrence_text) {
+    var refrence_letter_frequency =[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+    const textplain = [];
+    
+    for(var i=0; i < refrence_text.length ; i++ ){
+        var is_new = true;
+        for(var m=0; m < textplain.length ; m++ ){
+            if(refrence_text[i] == textplain[m]){
+                refrence_letter_frequency[m] +=1;
+                is_new = false;
+            }
+            if((m == (textplain.length-1)  ) && is_new == true && refrence_text[i] != "?" && refrence_text[i] != "."
+            && refrence_text[i] != "'" && refrence_text[i] != "\b"&& refrence_text[i] != "\n"
+            && refrence_text[i] != "," && refrence_text[i] != " " && refrence_text[i] != "!" && refrence_text[i] != ";"
+            &&  !(refrence_text[i].charCodeAt(0) <= 57 && refrence_text[i].charCodeAt(0) >= 48) && refrence_text[i] != ":" ){
+                textplain[m+1] = refrence_text[i];
+                refrence_letter_frequency[m+1] +=1;
+            }
+        }
+        if (i == 0 && is_new == true && refrence_text[i] != "?" && refrence_text[i] != "." && refrence_text[i] != "\n"
+            && refrence_text[i] != "'" && refrence_text[i] != "\b"&& refrence_text[i] != ":" && refrence_text[i] != ";"
+            && refrence_text[i] != "," && refrence_text[i] != " " && refrence_text[i] != "!" 
+            &&  !(refrence_text[i].charCodeAt(0) <= 57 && refrence_text[i].charCodeAt(0) >= 48) ){
+            textplain[i] = refrence_text[i];
+            refrence_letter_frequency[0] +=1;
+        }   
+    }
+
+    console.log(textplain);
+   // console.log(refrence_letter_frequency);
+    return {textplain , refrence_letter_frequency};
+}
+
+function ENC(textplain, Key)
+    {
+        let ciphertext="";
+        var char_Number = 0;
+        for (let i = 0; i < textplain.length; i++)
+        {   
+            let char = textplain[i];
+            char_Number = char.charCodeAt(0);
+            if (char_Number <= 90 && char_Number >= 65 ){// if ABC
+                let ch =  String.fromCharCode(( char.charCodeAt(0) + (Key*1)-65) % 26 + 65);
+                ciphertext += ch;
+            }
+            else if (char_Number <= 122 && char_Number >= 97 ){// If abc
+                let ch = String.fromCharCode(( char.charCodeAt(0) + (Key*1)-97) % 26 + 97);
+                ciphertext += ch;
+            }
+            else if(char_Number <= 57 && char_Number >= 48){// if 123
+                let ch = String.fromCharCode(  ( char.charCodeAt(0) + (Key*1) - 48) %10 + 48);
+                ciphertext += ch;
+            }
+            else {// undifend
+                if ( textplain[i] == " " || textplain[i] == "!" || textplain[i] == "?" || textplain[i] == ":" || textplain[i] == "\b" || textplain[i] == "'" 
+                ||textplain[i] == "." ||textplain[i] == "/" ||textplain[i] == ";" ||textplain[i] == ","||textplain[i] == "\n" ) {
+                    ciphertext += String.fromCharCode( char.charCodeAt(0));
+                }else {
+                    let ch = String.fromCharCode(  ( char.charCodeAt(0) + (Key*1) - 48) %10 + char.charCodeAt(0) );
+                    ciphertext += ch;
+                }
+            }
+        }
+        Encrypted_text = ciphertext;
+        return ciphertext;
+    }
+
+function order_values(text,value){
+
+    for(var n = 0 ; n < (text.length-1); n++){
+        for(var m= n+1 ; m < text.length; m++){
+            if( value[n] < value[m] ){
+                let temp = value[n];
+                value[n] =value[m];
+                value[m] = temp;
+                temp = text[n];
+                text[n] = text[m];
+                text[m] = temp;
+            }
+        } 
+    }
+   // console.log(value);
+   // console.log(text);
+    return {text,value};
+}
+function EncryptionFunction() {
+    var ciphertext = "";
+    var Key= 0;
+    var letter_frequency =[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+    let Textplain = document.getElementById("TextplainForm").elements[0].value;
+    Key = document.getElementById("TextplainForm").elements[1].value;
+    
+    text_plain = Textplain;
+    
+    ciphertext = ENC(Textplain,Key);
+
+    var values = letter_frequency_analysis(ciphertext.toUpperCase());
+    var Y= values.refrence_letter_frequency;
+    var X = values.textplain;
+    Encryption_test = X;
+    Encryption_test_value = Y;
+    // console.log(Encryption_test); true
+
+    var barColors = "blue";
+
+    new Chart("myChart", {
+    type: "bar",
+    data: {
+        labels: X,
+        datasets: [{
+        backgroundColor: barColors,
+        data: Y
+        }]
+    },
+    options: {
+        legend: {display: false},
+        title: {
+        display: true,
+        text: "letter frequency analysis"
+        }
+    }
+    });
+        
+    document.getElementById("ciphertext").innerHTML = ciphertext;
+}
+function RefrenceFunction() {
+    let refrence_text = document.getElementById("RefrenceForm").elements[0].value;
+    Refrence_textplain = refrence_text;
+    var values = letter_frequency_analysis(refrence_text.toUpperCase());
+    var Y= values.refrence_letter_frequency;
+    var X = values.textplain;
+    var barColors = "blue";
+    Refrence_test = X;
+    Refrence_test_value = Y;
+    new Chart("refrenceChart", {
+    type: "bar",
+    data: {
+        labels: X,
+        datasets: [{
+        backgroundColor: barColors,
+        data: Y
+        }]
+    },
+    options: {
+        legend: {display: false},
+        title: {
+        display: true,
+        text: "letter frequency analysis"
+        }
+    }
+    });
+       
+    let Refrence_order_value = order_values(Refrence_test,Refrence_test_value);
+    Refrence_test = Refrence_order_value.text;
+    Refrence_test_value = Refrence_order_value.value;
+    let Encryption_order_value = order_values(Encryption_test,Encryption_test_value);
+    Encryption_test = Encryption_order_value.text;
+    Encryption_test_value = Encryption_order_value.value;
+    solved_text = Encrypted_text;
+    for(var i=0 ; i < Encrypted_text.length;i++){
+        for(var m=0 ; m < Encryption_test.length;m++){
+            if(Encrypted_text[i].toUpperCase() == Encryption_test[m]){
+                solved_text =  solved_text.replace(solved_text[i],Refrence_test[m].toLowerCase());
+            }
+        }
+    }
+    var score = 0;
+    var Notletter = 0;
+    for(var i=0 ; i < solved_text.length;i++){
+        if(text_plain[i] == solved_text[i] && text_plain[i] != " " && text_plain[i] != "?" && text_plain[i] != "." 
+        && text_plain[i] != "\n" && text_plain[i] != ":" && text_plain[i] != ";" && text_plain[i] != "," 
+        && text_plain[i] != "!" && text_plain[i] != "'" && text_plain[i] != "\b" ){score += 1;}
+        else if (text_plain[i] == " " && text_plain[i] == "?" && text_plain[i] == "." 
+        && text_plain[i] == "\n" && text_plain[i] == ":" && text_plain[i] == ";" && text_plain[i] == "," 
+        && text_plain[i] == "!" && text_plain[i] == "'" && text_plain[i] == "\b" ){Notletter += 1;}
+    }
+    var lettertotal = text_plain.length - Notletter;
+    var similarityRate = (score*100)/lettertotal;
+    var result = lettertotal +  "harf uzerinden " + (lettertotal - score) + "hata = " +similarityRate;
+    console.log(text_plain);
+    console.log(solved_text);
+    console.log(similarityRate);
+    document.getElementById("Normaltext").innerHTML = text_plain;
+    document.getElementById("solovedtext").innerHTML = solved_text;
+    document.getElementById("similarityRate").innerHTML = result;
+
+}
+</script>
+
+
+
+
+</body>
+</html>
